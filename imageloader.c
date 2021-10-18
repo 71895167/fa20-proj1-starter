@@ -35,7 +35,7 @@ Image *readData(char *filename)
         for (int j = 0; j < img->cols; j++) {
             // int R, G, B;
             Color *col = (Color *) malloc(sizeof(Color));
-            fscanf(fp, "%hhu %hhu %hhu", &(col->R), &(col->G), &(col->B));
+            fscanf(fp, "%" SCNu8 " %" SCNu8 " %" SCNu8, &(col->R), &(col->G), &(col->B));
             *(img->image + i*(img->cols) + j) = col;
         }
     }

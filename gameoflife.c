@@ -17,19 +17,57 @@
 #include <inttypes.h>
 #include "imageloader.h"
 
+uint8_t evaluate8bits(uint8_t cur, uint8_t *arr, uint32_t rule) {
+    uint8_t ret = 0;
+    for (int i = 0; i < 8; i++) {
+        int cur_bit = (cur >> i) & 1;
+        int bit_sum = 0; for (int j = 0; j < 8; j++) bit_sum += (arr[j] >> i) & 1;
+        int life = (rule >> (9*cur_bit + bit_sum)) & 1;
+        ret += (life << i);
+    }
+    return ret;
+}
 //Determines what color the cell at the given row/col should be. This function allocates space for a new Color.
 //Note that you will need to read the eight neighbors of the cell in question. The grid "wraps", so we treat the top row as adjacent to the bottom row
 //and the left column as adjacent to the right column.
 Color *evaluateOneCell(Image *image, int row, int col, uint32_t rule)
 {
-	//YOUR CODE HERE
+    uint8_t Rs[8], Gs[8], Bs[8];
+    Color *ret = (Color *) malloc(sizeof(Color));
+    Color *cur = image->image[row * image->cols + col];
+    for (int c = 0, di = -1; di <= 1; di++) {
+        for (int dj = -1; dj <= 1; dj++) {
+            if ( ! (di == 0 && dj == 0)) { // 本来想把c++写在dj++后面的
+                int i = (row + di + image->rows) % image->rows;
+                int j = (col + dj + image->cols) % image->cols;
+                Color *color = image->image[i * image->cols + j];
+                Rs[c] = color->R, Gs[c] = color->G, Bs[c] = color->B;
+                c++;
+            }
+        }
+    }
+    ret->R = evaluate8bits(cur->R, Rs, rule);
+    ret->G = evaluate8bits(cur->G, Gs, rule);
+    ret->B = evaluate8bits(cur->B, Bs, rule);
+    return ret;
 }
 
 //The main body of Life; given an image and a rule, computes one iteration of the Game of Life.
 //You should be able to copy most of this from steganography.c
 Image *life(Image *image, uint32_t rule)
 {
-	//YOUR CODE HERE
+    Image *ret = (Image *) malloc(sizeof(Image));
+    ret->cols = image->cols;  ret->rows = image->rows;
+    ret->image = (Color **) malloc(ret->rows * ret->cols * sizeof(Color *));
+    for (int i = 0; i < ret->rows; i++) {
+        for (int j = 0; j < ret->cols; j++) {
+            Color *tmp = evaluateOneCell(image, i, j, rule);
+            ret->image[i*ret->cols + j] = tmp;
+            int a = 1;
+            a++;
+        }
+    }
+    return ret;
 }
 
 /*
@@ -49,5 +87,13 @@ You may find it useful to copy the code from steganography.c, to start.
 */
 int main(int argc, char **argv)
 {
-	//YOUR CODE HERE
+    char *fn = argv[1];
+//    uint32_t rule = strtol(argv[2] + 2, NULL, 16);
+    uint32_t rule = strtol(argv[2], NULL, 0);
+//    printf("rule: %" PRIu32 "\n", rule);
+    Image *image = readData(fn);
+    Image *next = life(image, rule);
+    writeData(next);
+    freeImage(image);  freeImage(next);
+    return 0;
 }

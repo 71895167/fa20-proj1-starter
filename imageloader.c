@@ -29,14 +29,14 @@ Image *readData(char *filename)
     FILE *fp = fopen(filename, "r");
     Image *img = (Image *) malloc(sizeof(Image));
     
-    fscanf(fp, "%s\n%d %d\n%d\n", P3, &(img->rows), &(img->cols), &n255);
+    fscanf(fp, "%s\n%d %d\n%d\n", P3, &(img->cols), &(img->rows), &n255);
     img->image = (Color **) malloc(img->rows * img->cols * sizeof(Color *));
     for (int i = 0; i < img->rows; i++) {
         for (int j = 0; j < img->cols; j++) {
             // int R, G, B;
-            Color *col = (Color *) malloc(sizeof(Color));
-            fscanf(fp, "%" SCNu8 " %" SCNu8 " %" SCNu8, &(col->R), &(col->G), &(col->B));
-            *(img->image + i*(img->cols) + j) = col;
+            Color *c = (Color *) malloc(sizeof(Color));
+            fscanf(fp, "%" SCNu8 " %" SCNu8 " %" SCNu8, &(c->R), &(c->G), &(c->B));
+            *(img->image + i*(img->cols) + j) = c;
         }
     }
     fclose(fp);
@@ -46,7 +46,7 @@ Image *readData(char *filename)
 //Given an image, prints to stdout (e.g. with printf) a .ppm P3 file with the image's data.
 void writeData(Image *image)
 {
-    printf("P3\n%d %d\n255\n", image->rows, image->cols);
+    printf("P3\n%d %d\n255\n", image->cols, image->rows);
     for (int i = 0; i < image->rows; i++) {
         for (int j = 0; j < image->cols; j++) {
             printf(j == 0 ? "%3d %3d %3d" : "   %3d %3d %3d", 
